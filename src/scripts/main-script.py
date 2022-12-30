@@ -1,7 +1,6 @@
 import csv
 import sqlite3
 import math
-import datetime
 
 print("Script Start...")
 csv_email_data = []
@@ -40,8 +39,8 @@ print("Updating database tables...")
 
 #cursor.execute("""CREATE TABLE customer_emails (
 #    email_id INTEGER,
-#    datetime_received TEXT,
-#    datetime_assigned TEST,
+#    datetime_received INTEGER,
+#    datetime_assigned INTEGER,
 #    trainer_id INTEGER,
 #    sender_name TEXT,
 #    company TEXT,
@@ -54,12 +53,24 @@ all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetcha
 all_emails = cursor.execute("SELECT * from customer_emails").fetchall()
 
 individual_totals = cursor.execute("""
-    SELECT implementation_specialists.last_name, COUNT(customer_emails.trainer_id) 
+    SELECT implementation_specialists.first_name, implementation_specialists.last_name, COUNT(customer_emails.trainer_id) 
     FROM implementation_specialists 
     LEFT JOIN customer_emails 
     ON implementation_specialists.trainer_id = customer_emails.trainer_id 
     GROUP BY implementation_specialists.last_name 
     ORDER BY COUNT(customer_emails.trainer_id) DESC""").fetchall()
+
+tas_total =cursor.execute("""
+    SELECT COUNT(*)
+    FROM customer_emails
+    WHERE type = 'TAS'
+""").fetchall()
+
+hospital_total =cursor.execute("""
+    SELECT COUNT(*)
+    FROM customer_emails
+    WHERE type = 'Hospital'
+""").fetchall()
 
 print("Closing database connection...")
 connection.commit()
@@ -71,20 +82,12 @@ print("========================")
 email_total = len(all_emails)
 print(f"Email Totals: {email_total}")
 
-tas_total = 0
-hospital_total = 0
 
-for email in all_emails:
-    if (email[7] == "TAS"):
-        tas_total += 1
-    elif (email[7] == "Hospital"):
-        hospital_total += 1
-
-print(f"TAS: {tas_total} ({math.floor((tas_total/email_total)*100)}%)")
-print(f"Hospital: {hospital_total} ({math.floor((hospital_total/email_total)*100)}%)")
+print(f"TAS: {tas_total[0][0]} ({math.floor((tas_total[0][0]/email_total)*100)}%)")
+print(f"Hospital: {hospital_total[0][0]} ({math.floor((hospital_total[0][0]/email_total)*100)}%)")
 
 for trainer in individual_totals:
-    print(trainer)
+    print(f'{trainer[0]} {trainer[1]}: {trainer[2]}')
 
 
 print("...Script End")
