@@ -2,11 +2,26 @@ import csv
 import sqlite3
 import math
 
-print("Script Start...")
+print("=========================")
+print("SCRIPT START...")
 csv_email_data = []
 csv_department_data = []
+def print_break():
+    print("-------------------------")
 
+print_break()
+print("Connecting to sqlite3 database...")
+print_break()
+
+connection = sqlite3.connect("../../../database/implementation.db")
+cursor = connection.cursor()
+print(f" - {connection}")
+print(f" - {cursor}")
+
+print_break()
 print("Opening csv files...")
+print_break()
+
 with open('../../../database/implementation-department.csv') as department_data:
     file_reader = csv.DictReader(department_data)
     for row in list(file_reader):
@@ -22,12 +37,18 @@ with open('../../../database/customer-emails.csv') as customer_emails:
             new_row.append(item[1])
         csv_email_data.append(tuple(new_row))
 
-print("Connecting to sqlite3 database...")
+old_implementation_table = all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
+old_email_table = cursor.execute("SELECT * from customer_emails").fetchall()
 
-connection = sqlite3.connect("../../../database/implementation.db")
-cursor = connection.cursor()
+new_trainers = len(csv_department_data) - len(old_implementation_table)
+new_emails = len(csv_email_data) - len(old_email_table)
 
+print(f" - {new_trainers} new trainers.")
+print(f" - {new_emails} new emails.")
+
+print_break()
 print("Updating database tables...")
+print_break()
 #cursor.execute("""CREATE TABLE implementation_specialists (
 #    trainer_id INTEGER,
 #    first_name TEXT,
@@ -49,9 +70,26 @@ print("Updating database tables...")
 #)""")
 #cursor.executemany("INSERT INTO customer_emails VALUES (?, ?, ?, ?, ?, ?, ?, ?)", csv_email_data)
 
+if (new_emails > 0):
+    print(f" - {new_emails} added to customer_emails table.")
+    new_email_data = csv_email_data[-(new_emails):]
+    for email in new_email_data:
+        print(f" - {email}")
+    cursor.executemany("INSERT INTO customer_emails VALUES (?, ?, ?, ?, ?, ?, ?, ?)", new_email_data)
+else:
+    print(" - No updates for customer_emails table.")
+
+if (new_trainers > 0):
+    print(f" - {new_trainers} added to implementation_specialists table.")
+else:
+    print(" - No updates for implementation_specialists table.")
+
+print_break()
+print("Executing additional queries...")
+print_break()
+
 all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
 all_emails = cursor.execute("SELECT * from customer_emails").fetchall()
-
 individual_totals = cursor.execute("""
     SELECT implementation_specialists.first_name, implementation_specialists.last_name, COUNT(customer_emails.trainer_id) 
     FROM implementation_specialists 
@@ -59,35 +97,41 @@ individual_totals = cursor.execute("""
     ON implementation_specialists.trainer_id = customer_emails.trainer_id 
     GROUP BY implementation_specialists.last_name 
     ORDER BY COUNT(customer_emails.trainer_id) DESC""").fetchall()
-
-tas_total =cursor.execute("""
+tas_total = cursor.execute("""
     SELECT COUNT(*)
     FROM customer_emails
     WHERE type = 'TAS'
 """).fetchall()
-
-hospital_total =cursor.execute("""
+hospital_total = cursor.execute("""
     SELECT COUNT(*)
     FROM customer_emails
     WHERE type = 'Hospital'
 """).fetchall()
 
+print(" - 5 total queries")
+
+print_break()
 print("Closing database connection...")
+print_break()
+
 connection.commit()
 connection.close()
 
+print_break()
 print("Generating reports...")
-print("========================")
+print_break()
 
 email_total = len(all_emails)
-print(f"Email Totals: {email_total}")
+print(f" - Email Totals: {email_total}")
 
 
-print(f"TAS: {tas_total[0][0]} ({math.floor((tas_total[0][0]/email_total)*100)}%)")
-print(f"Hospital: {hospital_total[0][0]} ({math.floor((hospital_total[0][0]/email_total)*100)}%)")
+print(f" - TAS: {tas_total[0][0]} ({math.floor((tas_total[0][0]/email_total)*100)}%)")
+print(f" - Hospital: {hospital_total[0][0]} ({math.floor((hospital_total[0][0]/email_total)*100)}%)")
 
+print(" - Implementation Specialists: Total Emails Assigned")
 for trainer in individual_totals:
-    print(f'{trainer[0]} {trainer[1]}: {trainer[2]}')
+    print(f'    - {trainer[0]} {trainer[1]}: {trainer[2]}')
 
 
-print("...Script End")
+print("...SCRIPT END")
+print("=========================")
