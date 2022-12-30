@@ -122,8 +122,7 @@ print("Generating reports...")
 print_break()
 
 email_total = len(all_emails)
-print(f" - Email Totals: {email_total}")
-
+print(f" - Email Total: {email_total}")
 
 print(f" - TAS: {tas_total[0][0]} ({math.floor((tas_total[0][0]/email_total)*100)}%)")
 print(f" - Hospital: {hospital_total[0][0]} ({math.floor((hospital_total[0][0]/email_total)*100)}%)")
