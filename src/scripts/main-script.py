@@ -107,26 +107,26 @@ hospital_total = cursor.execute("""
     FROM customer_emails
     WHERE type = 'Hospital'
 """).fetchall()
-
 emails_november_2022 = cursor.execute("""
     SELECT *
     FROM customer_emails
     WHERE datetime_received > 202211010000 AND datetime_received < 202212010000
 """).fetchall()
-
 emails_december_2022 = cursor.execute("""
     SELECT *
     FROM customer_emails
     WHERE datetime_received > 202212010000 AND datetime_received < 202301010000
 """).fetchall()
-
 emails_january_2023 = cursor.execute("""
     SELECT *
     FROM customer_emails
     WHERE datetime_received > 202301010000 AND datetime_received < 202302010000
 """).fetchall()
+same_day_assignments = cursor.execute("""
+    SELECT COUNT(*) FROM customer_emails WHERE FLOOR(datetime_received/10000) = FLOOR(datetime_assigned/10000)
+""").fetchall()
 
-print(" - 5 total queries")
+print(" - 10 total queries")
 
 print_break()
 print("Closing database connection...")
@@ -145,9 +145,10 @@ print(f"    - November 2022 Email Total: {len(emails_november_2022)}")
 print(f"    - December 2022 Email Total: {len(emails_december_2022)}")
 print(f"    - January 2023 Email Total: {len(emails_january_2023)}")
 
-
-print(f" - TAS: {tas_total[0][0]} ({math.floor((tas_total[0][0]/email_total)*100)}%)")
-print(f" - Hospital: {hospital_total[0][0]} ({math.floor((hospital_total[0][0]/email_total)*100)}%)")
+print(f" - Stats:")
+print(f"    - Same Day Assignments: {same_day_assignments[0][0]} ({math.floor((same_day_assignments[0][0]/email_total)*100)}%)")
+print(f"    - TAS: {tas_total[0][0]} ({math.floor((tas_total[0][0]/email_total)*100)}%)")
+print(f"    - Hospital: {hospital_total[0][0]} ({math.floor((hospital_total[0][0]/email_total)*100)}%)")
 
 print(" - Implementation Specialists: Total Emails Assigned")
 for trainer in individual_totals:
