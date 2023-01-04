@@ -135,7 +135,7 @@ top_ten_common_customers = cursor.execute("""
     LIMIT 10
 """).fetchall()
 
-print(" - 11 total queries")
+print(" - 10 total queries")
 
 print_break()
 print("Closing database connection...")
