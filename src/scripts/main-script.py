@@ -123,10 +123,19 @@ emails_january_2023 = cursor.execute("""
     WHERE datetime_received > 202301010000 AND datetime_received < 202302010000
 """).fetchall()
 same_day_assignments = cursor.execute("""
-    SELECT COUNT(*) FROM customer_emails WHERE FLOOR(datetime_received/10000) = FLOOR(datetime_assigned/10000)
+    SELECT COUNT(*) 
+    FROM customer_emails 
+    WHERE FLOOR(datetime_received/10000) = FLOOR(datetime_assigned/10000)
+""").fetchall()
+top_ten_common_customers = cursor.execute("""
+    SELECT customer_id, company, COUNT(customer_id) 
+    FROM customer_emails 
+    GROUP BY customer_id 
+    ORDER BY COUNT(customer_id) DESC
+    LIMIT 10
 """).fetchall()
 
-print(" - 10 total queries")
+print(" - 11 total queries")
 
 print_break()
 print("Closing database connection...")
@@ -153,6 +162,10 @@ print(f"    - Hospital: {hospital_total[0][0]} ({math.floor((hospital_total[0][0
 print(" - Implementation Specialists: Total Emails Assigned")
 for trainer in individual_totals:
     print(f'    - {trainer[0]} {trainer[1]}: {trainer[2]}')
+
+print(" - Most Frequent Customers")
+for customer in top_ten_common_customers:
+    print(f"    - {customer[0]} {customer[1]}: {customer[2]}")
 
 
 print("...SCRIPT END")
