@@ -108,6 +108,24 @@ hospital_total = cursor.execute("""
     WHERE type = 'Hospital'
 """).fetchall()
 
+emails_november_2022 = cursor.execute("""
+    SELECT *
+    FROM customer_emails
+    WHERE datetime_received > 202211010000 AND datetime_received < 202212010000
+""").fetchall()
+
+emails_december_2022 = cursor.execute("""
+    SELECT *
+    FROM customer_emails
+    WHERE datetime_received > 202212010000 AND datetime_received < 202301010000
+""").fetchall()
+
+emails_january_2023 = cursor.execute("""
+    SELECT *
+    FROM customer_emails
+    WHERE datetime_received > 202301010000 AND datetime_received < 202302010000
+""").fetchall()
+
 print(" - 5 total queries")
 
 print_break()
@@ -123,6 +141,10 @@ print_break()
 
 email_total = len(all_emails)
 print(f" - Email Total: {email_total}")
+print(f"    - November 2022 Email Total: {len(emails_november_2022)}")
+print(f"    - December 2022 Email Total: {len(emails_december_2022)}")
+print(f"    - January 2023 Email Total: {len(emails_january_2023)}")
+
 
 print(f" - TAS: {tas_total[0][0]} ({math.floor((tas_total[0][0]/email_total)*100)}%)")
 print(f" - Hospital: {hospital_total[0][0]} ({math.floor((hospital_total[0][0]/email_total)*100)}%)")
