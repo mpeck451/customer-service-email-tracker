@@ -1,6 +1,7 @@
 import csv
 import sqlite3
 import math
+import datetime
 
 print("=========================")
 print("SCRIPT START...")
@@ -139,6 +140,42 @@ connection.close()
 
 print_section("Generating reports...")
 
+under_24_hours = 0
+sunday_emails = 0
+monday_emails = 0
+tuesday_emails = 0
+wednesday_emails = 0
+thursday_emails = 0
+friday_emails = 0
+saturday_emails = 0
+for email in all_emails:
+    email_id = email[0]
+    datetime_received_string = str(email[1])
+    datetime_assigned_string = str(email[2])
+    date_received = datetime_received_string[:4] + "-" + datetime_received_string[4:6] + "-" + datetime_received_string[6:8]
+    time_received = datetime_received_string[8:10] + ":" + datetime_received_string[10:12]
+    date_assigned = datetime_assigned_string[:4] + "-" + datetime_assigned_string[4:6] + "-" + datetime_assigned_string[6:8]
+    time_assigned = datetime_assigned_string[8:10] + ":" + datetime_assigned_string[10:12]
+    datetime_received = datetime.datetime(int(datetime_received_string[:4]), int(datetime_received_string[4:6]), int(datetime_received_string[6:8]), hour = int(datetime_received_string[8:10]), minute = int(datetime_received_string[10:12]))
+    datetime_assigned = datetime.datetime(int(datetime_assigned_string[:4]), int(datetime_assigned_string[4:6]), int(datetime_assigned_string[6:8]), hour = int(datetime_assigned_string[8:10]), minute = int(datetime_assigned_string[10:12]))
+    if (not ('day' in str(datetime_assigned - datetime_received))):
+        under_24_hours += 1
+    match datetime_received.strftime('%a'):
+        case 'Sun':
+            sunday_emails += 1
+        case 'Mon':
+            monday_emails += 1
+        case 'Tue':
+            tuesday_emails += 1
+        case 'Wed':
+            wednesday_emails += 1
+        case 'Thu':
+            thursday_emails += 1
+        case 'Fri':
+            friday_emails += 1
+        case 'Sat':
+            saturday_emails += 1
+
 email_total = len(all_emails)
 print(f" - Email Total: {email_total}")
 print(f"    - November 2022 Email Total: {len(emails_november_2022)}")
@@ -147,6 +184,15 @@ print(f"    - January 2023 Email Total: {len(emails_january_2023)}")
 
 print(f" - Stats:")
 print(f"    - Same Day Assignments: {same_day_assignments[0][0]} ({math.floor((same_day_assignments[0][0]/email_total)*100)}%)")
+print(f"    - Assignments Under 24-hours: {under_24_hours} ({math.floor((under_24_hours/email_total)*100)}%)")
+print(f"    - Weekday Breakdown")
+print(f"       - Sunday: {sunday_emails}")
+print(f"       - Monday: {monday_emails}")
+print(f"       - Tuesday: {tuesday_emails}")
+print(f"       - Wednesday:{wednesday_emails}")
+print(f"       - Thursday: {thursday_emails}")
+print(f"       - Friday: {friday_emails}")
+print(f"       - Saturday: {saturday_emails}")
 print(f"    - TAS: {tas_total[0][0]} ({math.floor((tas_total[0][0]/email_total)*100)}%)")
 print(f"    - Hospital: {hospital_total[0][0]} ({math.floor((hospital_total[0][0]/email_total)*100)}%)")
 
@@ -157,7 +203,6 @@ for trainer in individual_totals:
 print(" - Most Frequent Customers")
 for customer in top_ten_common_customers:
     print(f"    - {customer[0]} {customer[1]}: {customer[2]}")
-
 
 print("...SCRIPT END")
 print("=========================")
