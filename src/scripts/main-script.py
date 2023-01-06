@@ -6,21 +6,20 @@ print("=========================")
 print("SCRIPT START...")
 csv_email_data = []
 csv_department_data = []
-def print_break():
+
+def print_section(string):
+    print("-------------------------")
+    print(string)
     print("-------------------------")
 
-print_break()
-print("Connecting to sqlite3 database...")
-print_break()
+print_section("Connecting to sqlite3 database...")
 
 connection = sqlite3.connect("../../../database/implementation.db")
 cursor = connection.cursor()
 print(f" - {connection}")
 print(f" - {cursor}")
 
-print_break()
-print("Opening csv files...")
-print_break()
+print_section("Opening csv files...")
 
 with open('../../../database/implementation-department.csv') as department_data:
     file_reader = csv.DictReader(department_data)
@@ -46,9 +45,7 @@ new_emails = len(csv_email_data) - len(old_email_table)
 print(f" - {new_trainers} new trainers.")
 print(f" - {new_emails} new emails.")
 
-print_break()
-print("Updating database tables...")
-print_break()
+print_section("Updating database tables...")
 #cursor.execute("""CREATE TABLE implementation_specialists (
 #    trainer_id INTEGER,
 #    first_name TEXT,
@@ -84,9 +81,7 @@ if (new_trainers > 0):
 else:
     print(" - No updates for implementation_specialists table.")
 
-print_break()
-print("Executing additional queries...")
-print_break()
+print_section("Executing additional queries...")
 
 all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
 all_emails = cursor.execute("SELECT * from customer_emails").fetchall()
@@ -137,16 +132,12 @@ top_ten_common_customers = cursor.execute("""
 
 print(" - 10 total queries")
 
-print_break()
-print("Closing database connection...")
-print_break()
+print_section("Closing database connection...")
 
 connection.commit()
 connection.close()
 
-print_break()
-print("Generating reports...")
-print_break()
+print_section("Generating reports...")
 
 email_total = len(all_emails)
 print(f" - Email Total: {email_total}")
