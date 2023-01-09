@@ -213,8 +213,9 @@ print(f"       - Wednesday:{wednesday_emails}")
 print(f"       - Thursday: {thursday_emails}")
 print(f"       - Friday: {friday_emails}")
 print(f"       - Saturday: {saturday_emails}")
-print(f"    - TAS: {tas_total[0][0]} {print_percentage(tas_total[0][0])}")
-print(f"    - Hospital: {hospital_total[0][0]} {print_percentage(hospital_total[0][0])}")
+print(f"    - Market Breakdown")
+print(f"       - TAS: {tas_total[0][0]} {print_percentage(tas_total[0][0])}")
+print(f"       - Hospital: {hospital_total[0][0]} {print_percentage(hospital_total[0][0])}")
 
 print(" - Implementation Specialists: Total Emails Assigned")
 for trainer in individual_totals:
