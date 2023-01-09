@@ -148,6 +148,7 @@ wednesday_emails = 0
 thursday_emails = 0
 friday_emails = 0
 saturday_emails = 0
+
 for email in all_emails:
     email_id = email[0]
     datetime_received_string = str(email[1])
@@ -158,8 +159,10 @@ for email in all_emails:
     time_assigned = datetime_assigned_string[8:10] + ":" + datetime_assigned_string[10:12]
     datetime_received = datetime.datetime(int(datetime_received_string[:4]), int(datetime_received_string[4:6]), int(datetime_received_string[6:8]), hour = int(datetime_received_string[8:10]), minute = int(datetime_received_string[10:12]))
     datetime_assigned = datetime.datetime(int(datetime_assigned_string[:4]), int(datetime_assigned_string[4:6]), int(datetime_assigned_string[6:8]), hour = int(datetime_assigned_string[8:10]), minute = int(datetime_assigned_string[10:12]))
+    
     if (not ('day' in str(datetime_assigned - datetime_received))):
         under_24_hours += 1
+
     match datetime_received.strftime('%a'):
         case 'Sun':
             sunday_emails += 1
