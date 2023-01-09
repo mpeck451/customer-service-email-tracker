@@ -177,14 +177,16 @@ for email in all_emails:
             saturday_emails += 1
 
 email_total = len(all_emails)
+def print_percentage(numerator, denominator = email_total):
+    return f"({round(((numerator/denominator)*100), 1)}%)"
 print(f" - Email Total: {email_total}")
 print(f"    - November 2022 Email Total: {len(emails_november_2022)}")
 print(f"    - December 2022 Email Total: {len(emails_december_2022)}")
 print(f"    - January 2023 Email Total: {len(emails_january_2023)}")
 
 print(f" - Stats:")
-print(f"    - Same Day Assignments: {same_day_assignments[0][0]} ({round(((same_day_assignments[0][0]/email_total)*100), 1)}%)")
-print(f"    - Assignments Under 24-hours: {under_24_hours} ({round(((under_24_hours/email_total)*100), 1)}%)")
+print(f"    - Same Day Assignments: {same_day_assignments[0][0]} {print_percentage(same_day_assignments[0][0])}")
+print(f"    - Assignments Under 24-hours: {under_24_hours} {print_percentage(under_24_hours)}")
 print(f"    - Weekday Breakdown")
 print(f"       - Sunday: {sunday_emails}")
 print(f"       - Monday: {monday_emails}")
@@ -193,8 +195,8 @@ print(f"       - Wednesday:{wednesday_emails}")
 print(f"       - Thursday: {thursday_emails}")
 print(f"       - Friday: {friday_emails}")
 print(f"       - Saturday: {saturday_emails}")
-print(f"    - TAS: {tas_total[0][0]} ({round(((tas_total[0][0]/email_total)*100), 1)}%)")
-print(f"    - Hospital: {hospital_total[0][0]} ({round(((hospital_total[0][0]/email_total)*100), 1)}%)")
+print(f"    - TAS: {tas_total[0][0]} {print_percentage(tas_total[0][0])}")
+print(f"    - Hospital: {hospital_total[0][0]} {print_percentage(hospital_total[0][0])}")
 
 print(" - Implementation Specialists: Total Emails Assigned")
 for trainer in individual_totals:
