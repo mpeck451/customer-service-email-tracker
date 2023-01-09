@@ -1,6 +1,5 @@
 import csv
 import sqlite3
-import math
 import datetime
 
 print("=========================")
@@ -139,8 +138,13 @@ connection.commit()
 connection.close()
 
 print_section("Generating reports...")
+email_total = len(all_emails)
 
 under_24_hours = 0
+one_day = 0
+two_days = 0
+three_or_more_days = 0
+
 sunday_emails = 0
 monday_emails = 0
 tuesday_emails = 0
@@ -160,8 +164,14 @@ for email in all_emails:
     datetime_received = datetime.datetime(int(datetime_received_string[:4]), int(datetime_received_string[4:6]), int(datetime_received_string[6:8]), hour = int(datetime_received_string[8:10]), minute = int(datetime_received_string[10:12]))
     datetime_assigned = datetime.datetime(int(datetime_assigned_string[:4]), int(datetime_assigned_string[4:6]), int(datetime_assigned_string[6:8]), hour = int(datetime_assigned_string[8:10]), minute = int(datetime_assigned_string[10:12]))
     
-    if (not ('day' in str(datetime_assigned - datetime_received))):
+    datetime_delta = str(datetime_assigned - datetime_received)
+
+    if (not ('day' in datetime_delta)):
         under_24_hours += 1
+    if ('1 day' in datetime_delta):
+        one_day += 1
+    if ('2 days' in datetime_delta):
+        two_days += 1
 
     match datetime_received.strftime('%a'):
         case 'Sun':
@@ -179,7 +189,8 @@ for email in all_emails:
         case 'Sat':
             saturday_emails += 1
 
-email_total = len(all_emails)
+three_or_more_days = email_total - under_24_hours - one_day - two_days
+
 def print_percentage(numerator, denominator = email_total):
     return f"({round(((numerator/denominator)*100), 1)}%)"
 print(f" - Email Total: {email_total}")
@@ -189,7 +200,11 @@ print(f"    - January 2023 Email Total: {len(emails_january_2023)}")
 
 print(f" - Stats:")
 print(f"    - Same Day Assignments: {same_day_assignments[0][0]} {print_percentage(same_day_assignments[0][0])}")
-print(f"    - Assignments Under 24-hours: {under_24_hours} {print_percentage(under_24_hours)}")
+print(f"    - Assignments by Intervals")
+print(f"       - Assignments Under 24-hours: {under_24_hours} {print_percentage(under_24_hours)}")
+print(f"       - Assignments between 24 and 48 hours: {one_day} {print_percentage(one_day)}")
+print(f"       - Assignments between 48 and 72 hours: {two_days} {print_percentage(two_days)}")
+print(f"       - Assignments greater than 72 hours: {three_or_more_days} {print_percentage(three_or_more_days)}")
 print(f"    - Weekday Breakdown")
 print(f"       - Sunday: {sunday_emails}")
 print(f"       - Monday: {monday_emails}")
