@@ -164,13 +164,27 @@ for email in all_emails:
     datetime_received = datetime.datetime(int(datetime_received_string[:4]), int(datetime_received_string[4:6]), int(datetime_received_string[6:8]), hour = int(datetime_received_string[8:10]), minute = int(datetime_received_string[10:12]))
     datetime_assigned = datetime.datetime(int(datetime_assigned_string[:4]), int(datetime_assigned_string[4:6]), int(datetime_assigned_string[6:8]), hour = int(datetime_assigned_string[8:10]), minute = int(datetime_assigned_string[10:12]))
     
-    datetime_delta = str(datetime_assigned - datetime_received)
+    datetime_delta = datetime_assigned - datetime_received
 
-    if (not ('day' in datetime_delta)):
+    #Subtracts 2 days from emails receieved on a Friday, but not assigned on Friday. Does not account for sat, sun email assignments.
+    if (datetime_received.strftime('%a') == "Fri" and datetime_assigned.strftime('%a') != 'Fri'):
+        datetime_delta -= datetime.timedelta(days = 2)
+    
+    #Subtracts 1 day from emails received on a Saturday, but not assigned on Saturday
+    if (datetime_received.strftime('%a') == "Sat" and datetime_assigned.strftime('%a') != 'Sat'):
+        print(datetime_delta - datetime.timedelta(days = 1))
+        datetime_delta -= datetime.timedelta(days = 1)
+
+    if '-' in str(datetime_delta):
+        print(f"""Calcuation Error: 
+        {email}
+        {datetime_delta}""")
+
+    if (not ('day' in str(datetime_delta))):
         under_24_hours += 1
-    if ('1 day' in datetime_delta):
+    if ('1 day' in str(datetime_delta)):
         one_day += 1
-    if ('2 days' in datetime_delta):
+    if ('2 days' in str(datetime_delta)):
         two_days += 1
 
     match datetime_received.strftime('%a'):
@@ -200,7 +214,7 @@ print(f"    - January 2023 Email Total: {len(emails_january_2023)}")
 
 print(f" - Stats:")
 print(f"    - Same Day Assignments: {same_day_assignments[0][0]} {print_percentage(same_day_assignments[0][0])}")
-print(f"    - Assignments by Intervals")
+print(f"    - Assignments by Intervals (Weekend Days Subtracted)")
 print(f"       - Assignments Under 24-hours: {under_24_hours} {print_percentage(under_24_hours)}")
 print(f"       - Assignments between 24 and 48 hours: {one_day} {print_percentage(one_day)}")
 print(f"       - Assignments between 48 and 72 hours: {two_days} {print_percentage(two_days)}")
