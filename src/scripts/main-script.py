@@ -6,21 +6,18 @@ print("=========================")
 print("SCRIPT START...")
 csv_email_data = []
 csv_department_data = []
-
 def print_section(string):
     print("-------------------------")
     print(string)
     print("-------------------------")
 
 print_section("Connecting to sqlite3 database...")
-
 connection = sqlite3.connect("../../../database/implementation.db")
 cursor = connection.cursor()
 print(f" - {connection}")
 print(f" - {cursor}")
 
 print_section("Opening csv files...")
-
 with open('../../../database/implementation-department.csv') as department_data:
     file_reader = csv.DictReader(department_data)
     for row in list(file_reader):
@@ -35,13 +32,10 @@ with open('../../../database/customer-emails.csv') as customer_emails:
         for item in row.items():
             new_row.append(item[1])
         csv_email_data.append(tuple(new_row))
-
 old_implementation_table = all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
 old_email_table = cursor.execute("SELECT * from customer_emails").fetchall()
-
 new_trainers = len(csv_department_data) - len(old_implementation_table)
 new_emails = len(csv_email_data) - len(old_email_table)
-
 print(f" - {new_trainers} new trainers.")
 print(f" - {new_emails} new emails.")
 
@@ -54,7 +48,6 @@ print_section("Updating database tables...")
 #    start_date DATE,
 #    work_from_home INTEGER)""")
 #cursor.executemany("""INSERT INTO implementation_specialists VALUES (?, ?, ?, ?, ?, ?)""", csv_department_data)
-
 #cursor.execute("""CREATE TABLE customer_emails (
 #    email_id INTEGER,
 #    datetime_received INTEGER,
@@ -66,7 +59,6 @@ print_section("Updating database tables...")
 #    type TEXT
 #)""")
 #cursor.executemany("INSERT INTO customer_emails VALUES (?, ?, ?, ?, ?, ?, ?, ?)", csv_email_data)
-
 if (new_emails > 0):
     print(f" - {new_emails} added to customer_emails table.")
     new_email_data = csv_email_data[-(new_emails):]
@@ -75,14 +67,11 @@ if (new_emails > 0):
     cursor.executemany("INSERT INTO customer_emails VALUES (?, ?, ?, ?, ?, ?, ?, ?)", new_email_data)
 else:
     print(" - No updates for customer_emails table.")
-
 if (new_trainers > 0):
     print(f" - {new_trainers} added to implementation_specialists table.")
 else:
     print(" - No updates for implementation_specialists table.")
-
 print_section("Executing additional queries...")
-
 all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
 all_emails = cursor.execute("SELECT * from customer_emails").fetchall()
 individual_totals = cursor.execute("""
@@ -129,22 +118,18 @@ top_ten_common_customers = cursor.execute("""
     ORDER BY COUNT(customer_id) DESC
     LIMIT 10
 """).fetchall()
-
 print(" - 10 total queries")
 
 print_section("Closing database connection...")
-
 connection.commit()
 connection.close()
 
 print_section("Generating reports...")
 email_total = len(all_emails)
-
 under_24_hours = 0
 one_day = 0
 two_days = 0
 three_or_more_days = 0
-
 sunday_emails = 0
 monday_emails = 0
 tuesday_emails = 0
@@ -152,7 +137,6 @@ wednesday_emails = 0
 thursday_emails = 0
 friday_emails = 0
 saturday_emails = 0
-
 for email in all_emails:
     email_id = email[0]
     datetime_received_string = str(email[1])
@@ -163,30 +147,24 @@ for email in all_emails:
     time_assigned = datetime_assigned_string[8:10] + ":" + datetime_assigned_string[10:12]
     datetime_received = datetime.datetime(int(datetime_received_string[:4]), int(datetime_received_string[4:6]), int(datetime_received_string[6:8]), hour = int(datetime_received_string[8:10]), minute = int(datetime_received_string[10:12]))
     datetime_assigned = datetime.datetime(int(datetime_assigned_string[:4]), int(datetime_assigned_string[4:6]), int(datetime_assigned_string[6:8]), hour = int(datetime_assigned_string[8:10]), minute = int(datetime_assigned_string[10:12]))
-    
     datetime_delta = datetime_assigned - datetime_received
-
     #Subtracts 2 days from emails receieved on a Friday, but not assigned on Friday. Does not account for sat, sun email assignments.
     if (datetime_received.strftime('%a') == "Fri" and datetime_assigned.strftime('%a') != 'Fri'):
         datetime_delta -= datetime.timedelta(days = 2)
-    
     #Subtracts 1 day from emails received on a Saturday, but not assigned on Saturday
     if (datetime_received.strftime('%a') == "Sat" and datetime_assigned.strftime('%a') != 'Sat'):
         print(datetime_delta - datetime.timedelta(days = 1))
         datetime_delta -= datetime.timedelta(days = 1)
-
     if '-' in str(datetime_delta):
         print(f"""Calcuation Error: 
         {email}
         {datetime_delta}""")
-
     if (not ('day' in str(datetime_delta))):
         under_24_hours += 1
     if ('1 day' in str(datetime_delta)):
         one_day += 1
     if ('2 days' in str(datetime_delta)):
         two_days += 1
-
     match datetime_received.strftime('%a'):
         case 'Sun':
             sunday_emails += 1
@@ -202,9 +180,7 @@ for email in all_emails:
             friday_emails += 1
         case 'Sat':
             saturday_emails += 1
-
 three_or_more_days = email_total - under_24_hours - one_day - two_days
-
 def print_percentage(numerator, denominator = email_total):
     return f"({round(((numerator/denominator)*100), 1)}%)"
 print(f" - Email Total: {email_total}")
