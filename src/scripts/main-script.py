@@ -1,6 +1,6 @@
 import csv
 import sqlite3
-import datetime
+import reports
 
 print("=========================")
 print("SCRIPT START...")
@@ -125,91 +125,35 @@ connection.commit()
 connection.close()
 
 print_section("Generating reports...")
-email_total = len(all_emails)
-under_24_hours = 0
-one_day = 0
-two_days = 0
-three_or_more_days = 0
-sunday_emails = 0
-monday_emails = 0
-tuesday_emails = 0
-wednesday_emails = 0
-thursday_emails = 0
-friday_emails = 0
-saturday_emails = 0
-for email in all_emails:
-    email_id = email[0]
-    datetime_received_string = str(email[1])
-    datetime_assigned_string = str(email[2])
-    date_received = datetime_received_string[:4] + "-" + datetime_received_string[4:6] + "-" + datetime_received_string[6:8]
-    time_received = datetime_received_string[8:10] + ":" + datetime_received_string[10:12]
-    date_assigned = datetime_assigned_string[:4] + "-" + datetime_assigned_string[4:6] + "-" + datetime_assigned_string[6:8]
-    time_assigned = datetime_assigned_string[8:10] + ":" + datetime_assigned_string[10:12]
-    datetime_received = datetime.datetime(int(datetime_received_string[:4]), int(datetime_received_string[4:6]), int(datetime_received_string[6:8]), hour = int(datetime_received_string[8:10]), minute = int(datetime_received_string[10:12]))
-    datetime_assigned = datetime.datetime(int(datetime_assigned_string[:4]), int(datetime_assigned_string[4:6]), int(datetime_assigned_string[6:8]), hour = int(datetime_assigned_string[8:10]), minute = int(datetime_assigned_string[10:12]))
-    datetime_delta = datetime_assigned - datetime_received
-    #Subtracts 2 days from emails receieved on a Friday, but not assigned on Friday. Does not account for sat, sun email assignments.
-    if (datetime_received.strftime('%a') == "Fri" and datetime_assigned.strftime('%a') != 'Fri'):
-        datetime_delta -= datetime.timedelta(days = 2)
-    #Subtracts 1 day from emails received on a Saturday, but not assigned on Saturday
-    if (datetime_received.strftime('%a') == "Sat" and datetime_assigned.strftime('%a') != 'Sat'):
-        print(datetime_delta - datetime.timedelta(days = 1))
-        datetime_delta -= datetime.timedelta(days = 1)
-    if '-' in str(datetime_delta):
-        print(f"""Calcuation Error: 
-        {email}
-        {datetime_delta}""")
-    if (not ('day' in str(datetime_delta))):
-        under_24_hours += 1
-    if ('1 day' in str(datetime_delta)):
-        one_day += 1
-    if ('2 days' in str(datetime_delta)):
-        two_days += 1
-    match datetime_received.strftime('%a'):
-        case 'Sun':
-            sunday_emails += 1
-        case 'Mon':
-            monday_emails += 1
-        case 'Tue':
-            tuesday_emails += 1
-        case 'Wed':
-            wednesday_emails += 1
-        case 'Thu':
-            thursday_emails += 1
-        case 'Fri':
-            friday_emails += 1
-        case 'Sat':
-            saturday_emails += 1
-three_or_more_days = email_total - under_24_hours - one_day - two_days
-def print_percentage(numerator, denominator = email_total):
-    return f"({round(((numerator/denominator)*100), 1)}%)"
-print(f" - Email Total: {email_total}")
+all_emails_report = reports.generate_report(all_emails)
+print(all_emails_report)
+print(f" - Email Total: {all_emails_report['email_total']}")
 print(f"    - November 2022 Email Total: {len(emails_november_2022)}")
 print(f"    - December 2022 Email Total: {len(emails_december_2022)}")
 print(f"    - January 2023 Email Total: {len(emails_january_2023)}")
 print(f" - Stats:")
-print(f"    - Same Day Assignments: {same_day_assignments[0][0]} {print_percentage(same_day_assignments[0][0])}")
+print(f"    - Same Day Assignments: {same_day_assignments[0][0]} {reports.calculate_percentage(same_day_assignments[0][0], all_emails_report['email_total'])}")
 print(f"    - Assignments by Intervals (Weekend Time Ignored)")
-print(f"       - Assignments Under 24-hours: {under_24_hours} {print_percentage(under_24_hours)}")
-print(f"       - Assignments between 24 and 48 hours: {one_day} {print_percentage(one_day)}")
-print(f"       - Assignments between 48 and 72 hours: {two_days} {print_percentage(two_days)}")
-print(f"       - Assignments greater than 72 hours: {three_or_more_days} {print_percentage(three_or_more_days)}")
+print(f"       - Assignments Under 24-hours: {all_emails_report['intervals']['under_24_hours']} {all_emails_report['intervals']['percentages']['under_24_hours']}")
+print(f"       - Assignments between 24 and 48 hours: {all_emails_report['intervals']['between_24_and_48']} {all_emails_report['intervals']['percentages']['between_24_and_48']}")
+print(f"       - Assignments between 48 and 72 hours: {all_emails_report['intervals']['between_48_and_72']} {all_emails_report['intervals']['percentages']['between_48_and_72']}")
+print(f"       - Assignments greater than 72 hours: {all_emails_report['intervals']['greater_than_72']} {all_emails_report['intervals']['percentages']['greater_than_72']}")
 print(f"    - Assignments by Benchmarks (Weekend Time Ignored)")
-print(f"       - Assignments within 24-hours: {under_24_hours} {print_percentage(under_24_hours)}")
-print(f"       - Assignments within 48 hours: {under_24_hours + one_day} {print_percentage((under_24_hours + one_day))}")
-print(f"       - Assignments within 72 hours: {under_24_hours + one_day + two_days} {print_percentage((under_24_hours + one_day + two_days))}")
-print(f"       - Assignments greater than 72 hours: {three_or_more_days} {print_percentage(three_or_more_days)}")
+print(f"       - Assignments within 24-hours: {all_emails_report['benchmarks']['within_24_hours']} {all_emails_report['benchmarks']['percentages']['within_24_hours']}")
+print(f"       - Assignments within 48 hours: {all_emails_report['intervals']['under_24_hours'] + all_emails_report['intervals']['between_24_and_48']} {all_emails_report['benchmarks']['percentages']['within_48_hours']}")
+print(f"       - Assignments within 72 hours: {all_emails_report['intervals']['under_24_hours'] + all_emails_report['intervals']['between_24_and_48'] + all_emails_report['intervals']['between_48_and_72']} {all_emails_report['benchmarks']['percentages']['within_72_hours']}")
+print(f"       - Assignments greater than 72 hours: {all_emails_report['intervals']['greater_than_72']} {all_emails_report['intervals']['percentages']['greater_than_72']}")
 print(f"    - Weekday Breakdown")
-print(f"       - Sunday: {sunday_emails}")
-print(f"       - Monday: {monday_emails}")
-print(f"       - Tuesday: {tuesday_emails}")
-print(f"       - Wednesday: {wednesday_emails}")
-print(f"       - Thursday: {thursday_emails}")
-print(f"       - Friday: {friday_emails}")
-print(f"       - Saturday: {saturday_emails}")
+print(f"       - Sunday: {all_emails_report['weekday_breakdown']['sunday_emails']}")
+print(f"       - Monday: {all_emails_report['weekday_breakdown']['monday_emails']}")
+print(f"       - Tuesday: {all_emails_report['weekday_breakdown']['tuesday_emails']}")
+print(f"       - Wednesday: {all_emails_report['weekday_breakdown']['wednesday_emails']}")
+print(f"       - Thursday: {all_emails_report['weekday_breakdown']['thursday_emails']}")
+print(f"       - Friday: {all_emails_report['weekday_breakdown']['friday_emails']}")
+print(f"       - Saturday: {all_emails_report['weekday_breakdown']['saturday_emails']}")
 print(f"    - Market Breakdown")
-print(f"       - TAS: {tas_total[0][0]} {print_percentage(tas_total[0][0])}")
-print(f"       - Hospital: {hospital_total[0][0]} {print_percentage(hospital_total[0][0])}")
+print(f"       - TAS: {tas_total[0][0]} {reports.calculate_percentage(tas_total[0][0], all_emails_report['email_total'])}")
+print(f"       - Hospital: {hospital_total[0][0]} {reports.calculate_percentage(hospital_total[0][0], all_emails_report['email_total'])}")
 print(" - Implementation Specialists: Total Emails Assigned")
 for trainer in individual_totals:
     print(f'    - {trainer[0]} {trainer[1]}: {trainer[2]}')
