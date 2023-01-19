@@ -7,24 +7,81 @@ def generate_report(email_array):
     report_data = {
         'email_total': len(email_array),
         'intervals': {
-            'under_24_hours': 0,
-            'between_24_and_48': 0,
-            'between_48_and_72': 0,
-            'greater_than_72': 0,
-            'percentages': {}
+            'same_day_assignments': {
+                'number': 0,
+                'percentage': ''
+            },
+            'under_24_hours': {
+                'number': 0,
+                'percentage': ''
+            },
+            'between_24_and_48': {
+                'number': 0,
+                'percentage': ''
+            },
+            'between_48_and_72': {
+                'number': 0,
+                'percentage': ''
+            },
+            'greater_than_72': {
+                'number': 0,
+                'percentage': ''
+            },
         },
         'benchmarks': {
-            'percentages': {}
+            'within_24_hours': {
+                'number': 0,
+                'percentage': ''
+            }, 
+            'within_48_hours': {
+                'number': 0,
+                'percentage': ''
+            },
+            'within_72_hours': {
+                'number': 0,
+                'percentage': ''
+            },
         },
         'weekday_breakdown': {
-            'sunday_emails': 0,
-            'monday_emails': 0,
-            'tuesday_emails': 0,
-            'wednesday_emails': 0,
-            'thursday_emails': 0,
-            'friday_emails': 0,
-            'saturday_emails': 0,
+            'sunday_emails': {
+                'number': 0,
+                'percentage': ''
+            },
+            'monday_emails': {
+                'number': 0,
+                'percentage': ''
+            },
+            'tuesday_emails': {
+                'number': 0,
+                'percentage': ''
+            },
+            'wednesday_emails': {
+                'number': 0,
+                'percentage': ''
+            },
+            'thursday_emails': {
+                'number': 0,
+                'percentage': ''
+            },
+            'friday_emails': {
+                'number': 0,
+                'percentage': ''
+            },
+            'saturday_emails': {
+                'number': 0,
+                'percentage': ''
+            },
         },
+        'markets': {
+            'tas': {
+                'number': 0,
+                'percentage': ''
+            },
+            'hospital': {
+                'number': 0,
+                'percentage': ''
+            }
+        }
     }
 
     def calculate_percentage(numerator, denominator = report_data['email_total']):
@@ -32,12 +89,17 @@ def generate_report(email_array):
 
 
     for email in email_array:
-        #email_id = email[0]
+        email_id = email[0]
         datetime_received_string = str(email[1])
         datetime_assigned_string = str(email[2])
+        market_type = email[7]
         datetime_received = datetime.datetime(int(datetime_received_string[:4]), int(datetime_received_string[4:6]), int(datetime_received_string[6:8]), hour = int(datetime_received_string[8:10]), minute = int(datetime_received_string[10:12]))
         datetime_assigned = datetime.datetime(int(datetime_assigned_string[:4]), int(datetime_assigned_string[4:6]), int(datetime_assigned_string[6:8]), hour = int(datetime_assigned_string[8:10]), minute = int(datetime_assigned_string[10:12]))
         datetime_delta = datetime_assigned - datetime_received
+
+        if (datetime_received.strftime('%y-%m-%d') == datetime_assigned.strftime('%y-%m-%d')):
+            report_data['intervals']['same_day_assignments']['number'] += 1
+
         #Subtracts 2 days from emails receieved on a Friday, but not assigned on Friday. Does not account for sat, sun email assignments.
         if (datetime_received.strftime('%a') == "Fri" and datetime_assigned.strftime('%a') != 'Fri'):
             datetime_delta -= datetime.timedelta(days = 2)
@@ -49,40 +111,67 @@ def generate_report(email_array):
             print(f"""Calcuation Error: 
             {email}
             {datetime_delta}""")
+
+
         if (not ('day' in str(datetime_delta))):
-            report_data['intervals']['under_24_hours'] += 1
+            report_data['intervals']['under_24_hours']['number'] += 1
         if ('1 day' in str(datetime_delta)):
-            report_data['intervals']['between_24_and_48'] += 1
+            report_data['intervals']['between_24_and_48']['number'] += 1
         if ('2 days' in str(datetime_delta)):
-            report_data['intervals']['between_48_and_72'] += 1
-        report_data['intervals']['greater_than_72'] = report_data['email_total'] - report_data['intervals']['under_24_hours'] - report_data['intervals']['between_24_and_48'] - report_data['intervals']['between_48_and_72']
+            report_data['intervals']['between_48_and_72']['number'] += 1
+        report_data['intervals']['greater_than_72']['number'] = report_data['email_total'] - report_data['intervals']['under_24_hours']['number'] - report_data['intervals']['between_24_and_48']['number'] - report_data['intervals']['between_48_and_72']['number']
+       
         match datetime_received.strftime('%a'):
             case 'Sun':
-                report_data['weekday_breakdown']['sunday_emails'] += 1
+                report_data['weekday_breakdown']['sunday_emails']['number'] += 1
             case 'Mon':
-                report_data['weekday_breakdown']['monday_emails'] += 1
+                report_data['weekday_breakdown']['monday_emails']['number'] += 1
             case 'Tue':
-                report_data['weekday_breakdown']['tuesday_emails'] += 1
+                report_data['weekday_breakdown']['tuesday_emails']['number'] += 1
             case 'Wed':
-                report_data['weekday_breakdown']['wednesday_emails'] += 1
+                report_data['weekday_breakdown']['wednesday_emails']['number'] += 1
             case 'Thu':
-                report_data['weekday_breakdown']['thursday_emails'] += 1
+                report_data['weekday_breakdown']['thursday_emails']['number'] += 1
             case 'Fri':
-                report_data['weekday_breakdown']['friday_emails'] += 1
+                report_data['weekday_breakdown']['friday_emails']['number'] += 1
             case 'Sat':
-                report_data['weekday_breakdown']['saturday_emails'] += 1
+                report_data['weekday_breakdown']['saturday_emails']['number'] += 1
 
+        match market_type:
+            case 'TAS':
+                report_data['markets']['tas']['number'] += 1
+            case 'Hospital':
+                report_data['markets']['hospital']['number'] += 1
+            case _:
+                print(f"Error: Market Type not recognized ({market_type}) in email ID: {email_id}")
+
+    #Add Same Day Assignment percentage data
+    report_data['intervals']['same_day_assignments']['percentage'] = calculate_percentage(report_data['intervals']['same_day_assignments']['number'])
+
+    #Add market percentage data
+    report_data['markets']['tas']['percentage'] = calculate_percentage(report_data['markets']['tas']['number'])
+    report_data['markets']['hospital']['percentage'] = calculate_percentage(report_data['markets']['hospital']['number'])
+
+    #Add Weekday percentage data
+    report_data['weekday_breakdown']['sunday_emails']['percentage'] = calculate_percentage(report_data['weekday_breakdown']['sunday_emails']['number'])
+    report_data['weekday_breakdown']['monday_emails']['percentage'] = calculate_percentage(report_data['weekday_breakdown']['monday_emails']['number'])
+    report_data['weekday_breakdown']['tuesday_emails']['percentage'] = calculate_percentage(report_data['weekday_breakdown']['tuesday_emails']['number'])
+    report_data['weekday_breakdown']['wednesday_emails']['percentage'] = calculate_percentage(report_data['weekday_breakdown']['wednesday_emails']['number'])
+    report_data['weekday_breakdown']['thursday_emails']['percentage'] = calculate_percentage(report_data['weekday_breakdown']['thursday_emails']['number'])
+    report_data['weekday_breakdown']['friday_emails']['percentage'] = calculate_percentage(report_data['weekday_breakdown']['friday_emails']['number'])
+    report_data['weekday_breakdown']['saturday_emails']['percentage'] = calculate_percentage(report_data['weekday_breakdown']['saturday_emails']['number'])
+    
     #Add interval percentage data
-    report_data['intervals']['percentages']['under_24_hours'] = calculate_percentage(report_data['intervals']['under_24_hours'])
-    report_data['intervals']['percentages']['between_24_and_48'] = calculate_percentage(report_data['intervals']['between_24_and_48'])
-    report_data['intervals']['percentages']['between_48_and_72'] = calculate_percentage(report_data['intervals']['between_48_and_72'])
-    report_data['intervals']['percentages']['greater_than_72'] = calculate_percentage(report_data['intervals']['greater_than_72'])
+    report_data['intervals']['under_24_hours']['percentage'] = calculate_percentage(report_data['intervals']['under_24_hours']['number'])
+    report_data['intervals']['between_24_and_48']['percentage'] = calculate_percentage(report_data['intervals']['between_24_and_48']['number'])
+    report_data['intervals']['between_48_and_72']['percentage'] = calculate_percentage(report_data['intervals']['between_48_and_72']['number'])
+    report_data['intervals']['greater_than_72']['percentage'] = calculate_percentage(report_data['intervals']['greater_than_72']['number'])
 
     #Add benchmark data            
-    report_data['benchmarks']['within_24_hours'] = report_data['intervals']['under_24_hours']
-    report_data['benchmarks']['percentages']['within_24_hours'] = calculate_percentage(report_data['benchmarks']['within_24_hours'])
-    report_data['benchmarks']['within_48_hours'] = report_data['intervals']['under_24_hours'] + report_data['intervals']['between_24_and_48']
-    report_data['benchmarks']['percentages']['within_48_hours'] = calculate_percentage(report_data['benchmarks']['within_48_hours'])
-    report_data['benchmarks']['within_72_hours'] = report_data['intervals']['under_24_hours'] + report_data['intervals']['between_24_and_48'] + report_data['intervals']['between_48_and_72']
-    report_data['benchmarks']['percentages']['within_72_hours'] = calculate_percentage(report_data['benchmarks']['within_72_hours'])
+    report_data['benchmarks']['within_24_hours']['number'] = report_data['intervals']['under_24_hours']['number']
+    report_data['benchmarks']['within_24_hours']['percentage'] = calculate_percentage(report_data['benchmarks']['within_24_hours']['number'])
+    report_data['benchmarks']['within_48_hours']['number'] = report_data['intervals']['under_24_hours']['number'] + report_data['intervals']['between_24_and_48']['number']
+    report_data['benchmarks']['within_48_hours']['percentage'] = calculate_percentage(report_data['benchmarks']['within_48_hours']['number'])
+    report_data['benchmarks']['within_72_hours']['number'] = report_data['intervals']['under_24_hours']['number'] + report_data['intervals']['between_24_and_48']['number'] + report_data['intervals']['between_48_and_72']['number']
+    report_data['benchmarks']['within_72_hours']['percentage'] = calculate_percentage(report_data['benchmarks']['within_72_hours']['number'])
     return report_data
