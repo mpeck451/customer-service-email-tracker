@@ -112,8 +112,6 @@ connection.close()
 
 print_section("Generating reports...")
 all_emails_report = reports.generate_report(all_emails)
-print(all_emails_report)
-print(reports.generate_report(emails_december_2022))
 print(f" - Email Total: {all_emails_report['email_total']}")
 print(f"    - November 2022 Email Total: {len(emails_november_2022)}")
 print(f"    - December 2022 Email Total: {len(emails_december_2022)}")
