@@ -141,10 +141,10 @@ print(f"       - TAS: {all_emails_report['markets']['tas']['number']} {all_email
 print(f"       - Hospital: {all_emails_report['markets']['hospital']['number']} {all_emails_report['markets']['hospital']['percentage']}")
 print(" - Implementation Specialists: Total Emails Assigned")
 for trainer in individual_totals:
-    print(f"    - {trainer[0]} {trainer[1]}: {trainer[2]} {reports.calculate_percentage(trainer[2], all_emails_report['email_total'])}")
+    print(f"    - {trainer[0]} {trainer[1]}: {trainer[2]}")
 print(" - Most Frequent Customers")
 for customer in top_ten_common_customers:
-    print(f"    - {customer[0]} {customer[1]}: {customer[2]} {reports.calculate_percentage(customer[2], all_emails_report['email_total'])}")
+    print(f"    - {customer[0]} {customer[1]}: {customer[2]}")
 
 print("...SCRIPT END")
 print("=========================")
