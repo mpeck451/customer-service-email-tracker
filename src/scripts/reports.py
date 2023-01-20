@@ -1,4 +1,5 @@
 import datetime
+import csv
 
 def normalize_datetime(datetime_int):
     datetime_str = str(datetime_int)
@@ -180,23 +181,59 @@ def generate_monthly_reports(data):
     report_object = {
         'available_months': [],
         'emails_by_month': [],
-        
     }
     for email in data:
         datetime_received = normalize_datetime(email[1])
-        month_year = datetime_received.strftime("%b-%y")
+        month_year = datetime_received.strftime("%y-%b")
         if (not(month_year in report_object['available_months'])):
             report_object['available_months'].append(month_year)
-            print(report_object['available_months'])
     for month in report_object['available_months']:
         report_object['emails_by_month'].append([])
     for email in data:
         datetime_received = normalize_datetime(email[1])
-        month_year = datetime_received.strftime("%b-%y")
+        month_year = datetime_received.strftime("%y-%b")
         month_year_index = report_object['available_months'].index(month_year)
         report_object['emails_by_month'][month_year_index].append(email)
     for month in report_object['emails_by_month']:
         month_report = generate_report(month)
-        print(month_report)
     return report_object
 
+def write_report(data, file_name):
+    report_data = generate_report(data)
+    with open (f"../../../reports/{file_name}.txt", 'w') as report:
+        report.writelines(f"{file_name}\n")
+        report.writelines(f" - Email Total: {len(data)}")
+        report.writelines(f" - Stats:\n")
+        report.writelines(f"    - Assignments by Intervals (Weekend Time Ignored)\n")
+        report.writelines(f"    =================================================\n")
+        report.writelines(f"       - Same Day Assignments:                {report_data['intervals']['same_day_assignments']['number']} {report_data['intervals']['same_day_assignments']['percentage']}\n")
+        report.writelines(f"       - Assignments between 0 and 24-hours:  {report_data['intervals']['under_24_hours']['number']} {report_data['intervals']['under_24_hours']['percentage']}\n")
+        report.writelines(f"       - Assignments between 24 and 48 hours: {report_data['intervals']['between_24_and_48']['number']} {report_data['intervals']['between_24_and_48']['percentage']}\n")
+        report.writelines(f"       - Assignments between 48 and 72 hours: {report_data['intervals']['between_48_and_72']['number']} {report_data['intervals']['between_48_and_72']['percentage']}\n")
+        report.writelines(f"       - Assignments greater than 72 hours:   {report_data['intervals']['greater_than_72']['number']} {report_data['intervals']['greater_than_72']['percentage']}\n")
+        report.writelines(f"    =================================================\n")
+        report.writelines(f"    - Assignments by Benchmarks (Weekend Time Ignored)\n")
+        report.writelines(f"    ==================================================\n")
+        report.writelines(f"       - Assignments within 24-hours: {report_data['benchmarks']['within_24_hours']['number']} {report_data['benchmarks']['within_24_hours']['percentage']}\n")
+        report.writelines(f"       - Assignments within 48 hours: {report_data['benchmarks']['within_48_hours']['number']} {report_data['benchmarks']['within_48_hours']['percentage']}\n")
+        report.writelines(f"       - Assignments within 72 hours: {report_data['benchmarks']['within_72_hours']['number']} {report_data['benchmarks']['within_72_hours']['percentage']}\n")
+        report.writelines(f"    ==================================================\n")
+        report.writelines(f"    - Weekday Breakdown\n")
+        report.writelines(f"    ===================\n")
+        report.writelines(f"       - Sunday:    {report_data['weekday_breakdown']['sunday_emails']['number']} {report_data['weekday_breakdown']['sunday_emails']['percentage']}\n")
+        report.writelines(f"       - Monday:    {report_data['weekday_breakdown']['monday_emails']['number']} {report_data['weekday_breakdown']['monday_emails']['percentage']}\n")
+        report.writelines(f"       - Tuesday:   {report_data['weekday_breakdown']['tuesday_emails']['number']} {report_data['weekday_breakdown']['tuesday_emails']['percentage']}\n")
+        report.writelines(f"       - Wednesday: {report_data['weekday_breakdown']['wednesday_emails']['number']} {report_data['weekday_breakdown']['wednesday_emails']['percentage']}\n")
+        report.writelines(f"       - Thursday:  {report_data['weekday_breakdown']['thursday_emails']['number']} {report_data['weekday_breakdown']['thursday_emails']['percentage']}\n")
+        report.writelines(f"       - Friday:    {report_data['weekday_breakdown']['friday_emails']['number']} {report_data['weekday_breakdown']['friday_emails']['percentage']}\n")
+        report.writelines(f"       - Saturday:  {report_data['weekday_breakdown']['saturday_emails']['number']} {report_data['weekday_breakdown']['saturday_emails']['percentage']}\n")
+        report.writelines(f"    ===================\n")
+        report.writelines(f"    - Market Breakdown\n")
+        report.writelines(f"    ==================\n")
+        report.writelines(f"       - TAS:      {report_data['markets']['tas']['number']} {report_data['markets']['tas']['percentage']}\n")
+        report.writelines(f"       - Hospital: {report_data['markets']['hospital']['number']} {report_data['markets']['hospital']['percentage']}\n")
+        report.writelines(f"    ==================\n")
+        report.writelines("\nEmails:\n")
+        for email in data:
+            report.writelines(f"{email}\n")
+    

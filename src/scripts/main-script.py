@@ -1,4 +1,5 @@
 import csv
+import sys
 import sqlite3
 import reports
 
@@ -10,6 +11,12 @@ def print_section(string):
     print("-------------------------")
     print(string)
     print("-------------------------")
+
+try:
+    should_write_txt = bool(sys.argv[1])
+except:
+    should_write_txt = False
+    print("No argument passed. Txt files will not be generated.")
 
 print_section("Connecting to sqlite3 database...")
 connection = sqlite3.connect("../../../database/implementation.db")
@@ -100,38 +107,53 @@ print_section("Generating reports...")
 all_emails_report = reports.generate_report(all_emails)
 monthly_reports = reports.generate_monthly_reports(all_emails)
 print(f" - Email Total: {all_emails_report['email_total']}")
+if should_write_txt:
+    reports.write_report(all_emails, 'all-emails')
 for month in monthly_reports['available_months']:
     month_year_index = monthly_reports['available_months'].index(month)
+    if should_write_txt:
+        reports.write_report(monthly_reports['emails_by_month'][month_year_index], str(month))
     print(f"    - {month} Email Total: {len(monthly_reports['emails_by_month'][month_year_index])}")
 print(f" - Stats:")
-print(f"    - Same Day Assignments: {all_emails_report['intervals']['same_day_assignments']['number']} {all_emails_report['intervals']['same_day_assignments']['percentage']}")
 print(f"    - Assignments by Intervals (Weekend Time Ignored)")
-print(f"       - Assignments Under 24-hours: {all_emails_report['intervals']['under_24_hours']['number']} {all_emails_report['intervals']['under_24_hours']['percentage']}")
+print(f"    =================================================")
+print(f"       - Same Day Assignments:                {all_emails_report['intervals']['same_day_assignments']['number']} {all_emails_report['intervals']['same_day_assignments']['percentage']}")
+print(f"       - Assignments between 0 and 24-hours:  {all_emails_report['intervals']['under_24_hours']['number']} {all_emails_report['intervals']['under_24_hours']['percentage']}")
 print(f"       - Assignments between 24 and 48 hours: {all_emails_report['intervals']['between_24_and_48']['number']} {all_emails_report['intervals']['between_24_and_48']['percentage']}")
 print(f"       - Assignments between 48 and 72 hours: {all_emails_report['intervals']['between_48_and_72']['number']} {all_emails_report['intervals']['between_48_and_72']['percentage']}")
-print(f"       - Assignments greater than 72 hours: {all_emails_report['intervals']['greater_than_72']['number']} {all_emails_report['intervals']['greater_than_72']['percentage']}")
+print(f"       - Assignments greater than 72 hours:   {all_emails_report['intervals']['greater_than_72']['number']} {all_emails_report['intervals']['greater_than_72']['percentage']}")
+print(f"    =================================================")
 print(f"    - Assignments by Benchmarks (Weekend Time Ignored)")
+print(f"    ==================================================")
 print(f"       - Assignments within 24-hours: {all_emails_report['benchmarks']['within_24_hours']['number']} {all_emails_report['benchmarks']['within_24_hours']['percentage']}")
 print(f"       - Assignments within 48 hours: {all_emails_report['benchmarks']['within_48_hours']['number']} {all_emails_report['benchmarks']['within_48_hours']['percentage']}")
 print(f"       - Assignments within 72 hours: {all_emails_report['benchmarks']['within_72_hours']['number']} {all_emails_report['benchmarks']['within_72_hours']['percentage']}")
-print(f"       - Assignments greater than 72 hours: {all_emails_report['intervals']['greater_than_72']['number']} {all_emails_report['intervals']['greater_than_72']['percentage']}")
+print(f"    ==================================================")
 print(f"    - Weekday Breakdown")
-print(f"       - Sunday: {all_emails_report['weekday_breakdown']['sunday_emails']['number']} {all_emails_report['weekday_breakdown']['sunday_emails']['percentage']}")
-print(f"       - Monday: {all_emails_report['weekday_breakdown']['monday_emails']['number']} {all_emails_report['weekday_breakdown']['monday_emails']['percentage']}")
-print(f"       - Tuesday: {all_emails_report['weekday_breakdown']['tuesday_emails']['number']} {all_emails_report['weekday_breakdown']['tuesday_emails']['percentage']}")
+print(f"    ===================")
+print(f"       - Sunday:    {all_emails_report['weekday_breakdown']['sunday_emails']['number']} {all_emails_report['weekday_breakdown']['sunday_emails']['percentage']}")
+print(f"       - Monday:    {all_emails_report['weekday_breakdown']['monday_emails']['number']} {all_emails_report['weekday_breakdown']['monday_emails']['percentage']}")
+print(f"       - Tuesday:   {all_emails_report['weekday_breakdown']['tuesday_emails']['number']} {all_emails_report['weekday_breakdown']['tuesday_emails']['percentage']}")
 print(f"       - Wednesday: {all_emails_report['weekday_breakdown']['wednesday_emails']['number']} {all_emails_report['weekday_breakdown']['wednesday_emails']['percentage']}")
-print(f"       - Thursday: {all_emails_report['weekday_breakdown']['thursday_emails']['number']} {all_emails_report['weekday_breakdown']['thursday_emails']['percentage']}")
-print(f"       - Friday: {all_emails_report['weekday_breakdown']['friday_emails']['number']} {all_emails_report['weekday_breakdown']['friday_emails']['percentage']}")
-print(f"       - Saturday: {all_emails_report['weekday_breakdown']['saturday_emails']['number']} {all_emails_report['weekday_breakdown']['saturday_emails']['percentage']}")
+print(f"       - Thursday:  {all_emails_report['weekday_breakdown']['thursday_emails']['number']} {all_emails_report['weekday_breakdown']['thursday_emails']['percentage']}")
+print(f"       - Friday:    {all_emails_report['weekday_breakdown']['friday_emails']['number']} {all_emails_report['weekday_breakdown']['friday_emails']['percentage']}")
+print(f"       - Saturday:  {all_emails_report['weekday_breakdown']['saturday_emails']['number']} {all_emails_report['weekday_breakdown']['saturday_emails']['percentage']}")
+print(f"    ===================")
 print(f"    - Market Breakdown")
-print(f"       - TAS: {all_emails_report['markets']['tas']['number']} {all_emails_report['markets']['tas']['percentage']}")
+print(f"    ==================")
+print(f"       - TAS:      {all_emails_report['markets']['tas']['number']} {all_emails_report['markets']['tas']['percentage']}")
 print(f"       - Hospital: {all_emails_report['markets']['hospital']['number']} {all_emails_report['markets']['hospital']['percentage']}")
+print(f"    ==================")
 print(" - Implementation Specialists: Total Emails Assigned")
+print(f"    ===============================================")
 for trainer in individual_totals:
     print(f"    - {trainer[0]} {trainer[1]}: {trainer[2]}")
+print(f"    ===============================================")
 print(" - Most Frequent Customers")
+print(f"    =====================")
 for customer in top_ten_common_customers:
     print(f"    - {customer[0]} {customer[1]}: {customer[2]}")
+print(f"    =====================")
 
 print("...SCRIPT END")
 print("=========================")
