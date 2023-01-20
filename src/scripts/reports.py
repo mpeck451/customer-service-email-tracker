@@ -1,7 +1,9 @@
 import datetime
 
-def calculate_percentage(numerator, denominator):
-    return f"({round(((numerator/denominator)*100), 1)}%)"
+def normalize_datetime(datetime_int):
+    datetime_str = str(datetime_int)
+    python_datetime = datetime.datetime(int(datetime_str[:4]), int(datetime_str[4:6]), int(datetime_str[6:8]), hour = int(datetime_str[8:10]), minute = int(datetime_str[10:12]))
+    return python_datetime
 
 def generate_report(email_array):
     report_data = {
@@ -90,11 +92,9 @@ def generate_report(email_array):
 
     for email in email_array:
         email_id = email[0]
-        datetime_received_string = str(email[1])
-        datetime_assigned_string = str(email[2])
         market_type = email[7]
-        datetime_received = datetime.datetime(int(datetime_received_string[:4]), int(datetime_received_string[4:6]), int(datetime_received_string[6:8]), hour = int(datetime_received_string[8:10]), minute = int(datetime_received_string[10:12]))
-        datetime_assigned = datetime.datetime(int(datetime_assigned_string[:4]), int(datetime_assigned_string[4:6]), int(datetime_assigned_string[6:8]), hour = int(datetime_assigned_string[8:10]), minute = int(datetime_assigned_string[10:12]))
+        datetime_received = normalize_datetime(email[1])
+        datetime_assigned = normalize_datetime(email[2])
         datetime_delta = datetime_assigned - datetime_received
 
         if (datetime_received.strftime('%y-%m-%d') == datetime_assigned.strftime('%y-%m-%d')):
@@ -175,3 +175,28 @@ def generate_report(email_array):
     report_data['benchmarks']['within_72_hours']['number'] = report_data['intervals']['under_24_hours']['number'] + report_data['intervals']['between_24_and_48']['number'] + report_data['intervals']['between_48_and_72']['number']
     report_data['benchmarks']['within_72_hours']['percentage'] = calculate_percentage(report_data['benchmarks']['within_72_hours']['number'])
     return report_data
+
+def generate_monthly_reports(data):
+    report_object = {
+        'available_months': [],
+        'emails_by_month': [],
+        
+    }
+    for email in data:
+        datetime_received = normalize_datetime(email[1])
+        month_year = datetime_received.strftime("%b-%y")
+        if (not(month_year in report_object['available_months'])):
+            report_object['available_months'].append(month_year)
+            print(report_object['available_months'])
+    for month in report_object['available_months']:
+        report_object['emails_by_month'].append([])
+    for email in data:
+        datetime_received = normalize_datetime(email[1])
+        month_year = datetime_received.strftime("%b-%y")
+        month_year_index = report_object['available_months'].index(month_year)
+        report_object['emails_by_month'][month_year_index].append(email)
+    for month in report_object['emails_by_month']:
+        month_report = generate_report(month)
+        print(month_report)
+    return report_object
+

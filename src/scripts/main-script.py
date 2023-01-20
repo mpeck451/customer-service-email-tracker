@@ -74,7 +74,8 @@ else:
     
 print_section("Executing additional queries...")
 all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
-all_emails = cursor.execute("SELECT * from customer_emails").fetchall()
+#Don't change all_emails query. Especially the ORDER BY. Referenced in 'generate_monthly_report'. 
+all_emails = cursor.execute("SELECT * from customer_emails ORDER BY datetime_received ASC").fetchall()
 individual_totals = cursor.execute("""
     SELECT implementation_specialists.first_name, implementation_specialists.last_name, COUNT(customer_emails.trainer_id) 
     FROM implementation_specialists 
@@ -82,21 +83,6 @@ individual_totals = cursor.execute("""
     ON implementation_specialists.trainer_id = customer_emails.trainer_id 
     GROUP BY implementation_specialists.last_name 
     ORDER BY COUNT(customer_emails.trainer_id) DESC""").fetchall()
-emails_november_2022 = cursor.execute("""
-    SELECT *
-    FROM customer_emails
-    WHERE datetime_received > 202211010000 AND datetime_received < 202212010000
-""").fetchall()
-emails_december_2022 = cursor.execute("""
-    SELECT *
-    FROM customer_emails
-    WHERE datetime_received > 202212010000 AND datetime_received < 202301010000
-""").fetchall()
-emails_january_2023 = cursor.execute("""
-    SELECT *
-    FROM customer_emails
-    WHERE datetime_received > 202301010000 AND datetime_received < 202302010000
-""").fetchall()
 top_ten_common_customers = cursor.execute("""
     SELECT customer_id, company, COUNT(customer_id) 
     FROM customer_emails 
@@ -104,7 +90,7 @@ top_ten_common_customers = cursor.execute("""
     ORDER BY COUNT(customer_id) DESC
     LIMIT 10
 """).fetchall()
-print(" - 7 total queries")
+print(" - 4 total queries")
 
 print_section("Closing database connection...")
 connection.commit()
@@ -112,10 +98,11 @@ connection.close()
 
 print_section("Generating reports...")
 all_emails_report = reports.generate_report(all_emails)
+monthly_reports = reports.generate_monthly_reports(all_emails)
 print(f" - Email Total: {all_emails_report['email_total']}")
-print(f"    - November 2022 Email Total: {len(emails_november_2022)}")
-print(f"    - December 2022 Email Total: {len(emails_december_2022)}")
-print(f"    - January 2023 Email Total: {len(emails_january_2023)}")
+for month in monthly_reports['available_months']:
+    month_year_index = monthly_reports['available_months'].index(month)
+    print(f"    - {month} Email Total: {len(monthly_reports['emails_by_month'][month_year_index])}")
 print(f" - Stats:")
 print(f"    - Same Day Assignments: {all_emails_report['intervals']['same_day_assignments']['number']} {all_emails_report['intervals']['same_day_assignments']['percentage']}")
 print(f"    - Assignments by Intervals (Weekend Time Ignored)")
