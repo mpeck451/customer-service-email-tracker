@@ -106,7 +106,6 @@ def generate_report(email_array):
             datetime_delta -= datetime.timedelta(days = 2)
         #Subtracts 1 day from emails received on a Saturday, but not assigned on Saturday
         if (datetime_received.strftime('%a') == "Sat" and datetime_assigned.strftime('%a') != 'Sat'):
-            print(datetime_delta - datetime.timedelta(days = 1))
             datetime_delta -= datetime.timedelta(days = 1)
         if '-' in str(datetime_delta):
             print(f"""Calcuation Error: 
