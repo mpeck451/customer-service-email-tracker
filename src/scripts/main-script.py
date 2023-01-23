@@ -14,6 +14,10 @@ def print_section(string):
 
 try:
     should_write_txt = bool(sys.argv[1])
+    if should_write_txt:
+        print("Txt files will be generated.")
+    else:
+        print("Txt files will not be generated")
 except:
     should_write_txt = False
     print("No argument passed. Txt files will not be generated.")

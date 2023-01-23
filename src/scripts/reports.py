@@ -184,14 +184,14 @@ def generate_monthly_reports(data):
     }
     for email in data:
         datetime_received = normalize_datetime(email[1])
-        month_year = datetime_received.strftime("%y-%b")
+        month_year = datetime_received.strftime("%y-%m-%b")
         if (not(month_year in report_object['available_months'])):
             report_object['available_months'].append(month_year)
     for month in report_object['available_months']:
         report_object['emails_by_month'].append([])
     for email in data:
         datetime_received = normalize_datetime(email[1])
-        month_year = datetime_received.strftime("%y-%b")
+        month_year = datetime_received.strftime("%y-%m-%b")
         month_year_index = report_object['available_months'].index(month_year)
         report_object['emails_by_month'][month_year_index].append(email)
     for month in report_object['emails_by_month']:
