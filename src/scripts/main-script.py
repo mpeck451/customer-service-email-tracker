@@ -43,21 +43,13 @@ with open('../../../database/customer-emails.csv') as customer_emails:
         for item in row.items():
             new_row.append(item[1])
         csv_email_data.append(tuple(new_row))
-old_implementation_table = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
-old_email_table = cursor.execute("SELECT * from customer_emails").fetchall()
-new_trainers = len(csv_department_data) - len(old_implementation_table)
-new_emails = len(csv_email_data) - len(old_email_table)
-print(f" - {new_trainers} new trainers.")
-print(f" - {new_emails} new emails.")
-
-print_section("Updating database tables...")
 #cursor.execute("""CREATE TABLE implementation_specialists (
 #    trainer_id INTEGER,
 #    first_name TEXT,
 #    last_name TEXT,
 #    position TEXT,
-#    start_date DATE,
-#    work_from_home INTEGER)""")
+#    team INTEGER,
+#    is_incumbent BOOLEAN)""")
 #cursor.executemany("""INSERT INTO implementation_specialists VALUES (?, ?, ?, ?, ?, ?)""", csv_department_data)
 #cursor.execute("""CREATE TABLE customer_emails (
 #    email_id INTEGER,
@@ -70,6 +62,14 @@ print_section("Updating database tables...")
 #    type TEXT
 #)""")
 #cursor.executemany("INSERT INTO customer_emails VALUES (?, ?, ?, ?, ?, ?, ?, ?)", csv_email_data)
+old_implementation_table = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
+old_email_table = cursor.execute("SELECT * from customer_emails").fetchall()
+new_trainers = len(csv_department_data) - len(old_implementation_table)
+new_emails = len(csv_email_data) - len(old_email_table)
+print(f" - {new_trainers} new trainers.")
+print(f" - {new_emails} new emails.")
+
+print_section("Updating database tables...")
 if (new_emails > 0):
     print(f" - {new_emails} added to customer_emails table.")
     new_email_data = csv_email_data[-(new_emails):]
@@ -80,11 +80,25 @@ else:
     print(" - No new entries for customer_emails table.")
 if (new_trainers > 0):
     print(f" - {new_trainers} added to implementation_specialists table.")
+    new_trainers = csv_department_data[-(new_trainers):]
+    cursor.executemany("INSERT INTO implementation_specialists VALUES (?, ?, ?, ?, ?, ?)", new_trainers)
 else:
     print(" - No new entries for implementation_specialists table.")
 
+for trainer in csv_department_data:
+    cursor.execute(f"""
+        UPDATE implementation_specialists
+        SET
+            trainer_id = {int(trainer[0])},
+            first_name = "{str(trainer[1])}",
+            last_name = "{str(trainer[2])}",
+            position = "{str(trainer[3])}",
+            team = {trainer[4]},
+            is_incumbent = {bool(trainer[5])}
+        WHERE trainer_id = {int(trainer[0])};
+    """)
+
 for email in csv_email_data:
-    print(email)
     cursor.execute(f"""
         UPDATE customer_emails
         SET email_id = {int(email[0])},
@@ -98,13 +112,10 @@ for email in csv_email_data:
         WHERE email_id = {int(email[0])};
     """)
     
-
-    
 print_section("Executing additional queries...")
 all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
 #Don't change all_emails query. Especially the ORDER BY. Referenced in 'generate_monthly_report'. 
 all_emails = cursor.execute("SELECT * from customer_emails ORDER BY datetime_received ASC").fetchall()
-print(all_emails)
 individual_totals = cursor.execute("""
     SELECT implementation_specialists.first_name, implementation_specialists.last_name, COUNT(customer_emails.trainer_id) 
     FROM implementation_specialists 
