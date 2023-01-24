@@ -74,19 +74,37 @@ if (new_emails > 0):
     print(f" - {new_emails} added to customer_emails table.")
     new_email_data = csv_email_data[-(new_emails):]
     for email in new_email_data:
-        print(f" - {email}")
+        print(f" - {email}")        
     cursor.executemany("INSERT INTO customer_emails VALUES (?, ?, ?, ?, ?, ?, ?, ?)", new_email_data)
 else:
-    print(" - No updates for customer_emails table.")
+    print(" - No new entries for customer_emails table.")
 if (new_trainers > 0):
     print(f" - {new_trainers} added to implementation_specialists table.")
 else:
-    print(" - No updates for implementation_specialists table.")
+    print(" - No new entries for implementation_specialists table.")
+
+for email in csv_email_data:
+    print(email)
+    cursor.execute(f"""
+        UPDATE customer_emails
+        SET email_id = {int(email[0])},
+            datetime_received = {int(email[1])},
+            datetime_assigned = {int(email[2])},
+            trainer_id = {int(email[3])},
+            sender_name = '{str(email[4])}',
+            company = "{str(email[5])}",
+            customer_id = {int(email[6])},
+            type = '{str(email[7])}'
+        WHERE email_id = {int(email[0])};
+    """)
+    
+
     
 print_section("Executing additional queries...")
 all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetchall()
 #Don't change all_emails query. Especially the ORDER BY. Referenced in 'generate_monthly_report'. 
 all_emails = cursor.execute("SELECT * from customer_emails ORDER BY datetime_received ASC").fetchall()
+print(all_emails)
 individual_totals = cursor.execute("""
     SELECT implementation_specialists.first_name, implementation_specialists.last_name, COUNT(customer_emails.trainer_id) 
     FROM implementation_specialists 
