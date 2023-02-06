@@ -176,19 +176,34 @@ print(f""" - Stats:
     ==================
        - TAS:      {all_emails_report['markets']['tas']['number']} {all_emails_report['markets']['tas']['percentage']}
        - Hospital: {all_emails_report['markets']['hospital']['number']} {all_emails_report['markets']['hospital']['percentage']}
-    ==================
- - Implementation Specialists: Total Emails Assigned
+    ==================""")
+
+print(" - Department Data")
+print("    ===============================================")
+implementation_titles = {}
+for trainer in all_trainers:
+    if len(trainer[3]) > 0 and not trainer[3] in implementation_titles:
+        implementation_titles[trainer[3]] = 0
+    if trainer[3] in implementation_titles:
+        implementation_titles[trainer[3]] += 1
+for title in implementation_titles:
+    print(f"    - {title}s: {implementation_titles[title]}")
+print("    ===============================================")
+
+print(""" - Total Emails Assigned by Individual Since 11/1/2022
     ===============================================""")
+trainer_rank = 0
 for trainer in individual_totals:
+    trainer_rank += 1
     if (trainer[3]):
-        print(f"    - {trainer[0]} {trainer[1]}: {trainer[2]}")
+        print(f"    {trainer_rank}. {trainer[0]} {trainer[1]}: {trainer[2]}")
 print(f"    ===============================================")
 print(f"    - Former Implementaion Specialists")
 for trainer in individual_totals:
     if (not trainer[3]):
         print(f"       - {trainer[0]} {trainer[1]}: {trainer[2]}")
 print(f"    ===============================================")
-print(" - Most Frequent Customers")
+print(" - Most Frequent Customers Since 11/1/2022")
 print(f"    =====================")
 for customer in top_ten_common_customers:
     print(f"    - {customer[0]} {customer[1]}: {customer[2]}")
