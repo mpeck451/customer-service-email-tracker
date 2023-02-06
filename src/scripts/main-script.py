@@ -187,7 +187,7 @@ for trainer in all_trainers:
     if trainer[3] in implementation_titles:
         implementation_titles[trainer[3]] += 1
 for title in implementation_titles:
-    print(f"    - {title}s: {implementation_titles[title]}")
+    print(f"    - {title}: {implementation_titles[title]}")
 print("    ===============================================")
 
 print(""" - Total Emails Assigned by Individual Since 11/1/2022
