@@ -93,8 +93,8 @@ for trainer in csv_department_data:
             first_name = "{str(trainer[1])}",
             last_name = "{str(trainer[2])}",
             position = "{str(trainer[3])}",
-            team = {trainer[4]},
-            is_incumbent = {bool(trainer[5])}
+            team = {int(trainer[4])},
+            is_incumbent = {int(trainer[5])}
         WHERE trainer_id = {int(trainer[0])};
     """)
 
@@ -117,11 +117,11 @@ all_trainers = cursor.execute("SELECT * FROM implementation_specialists").fetcha
 #Don't change all_emails query. Especially the ORDER BY. Referenced in 'generate_monthly_report'. 
 all_emails = cursor.execute("SELECT * from customer_emails ORDER BY datetime_received ASC").fetchall()
 individual_totals = cursor.execute("""
-    SELECT implementation_specialists.first_name, implementation_specialists.last_name, COUNT(customer_emails.trainer_id) 
-    FROM implementation_specialists 
-    LEFT JOIN customer_emails 
-    ON implementation_specialists.trainer_id = customer_emails.trainer_id 
-    GROUP BY implementation_specialists.last_name 
+    SELECT implementation_specialists.first_name, implementation_specialists.last_name, COUNT(customer_emails.trainer_id), implementation_specialists.is_incumbent
+    FROM implementation_specialists
+    LEFT JOIN customer_emails
+    ON implementation_specialists.trainer_id = customer_emails.trainer_id
+    GROUP BY implementation_specialists.last_name
     ORDER BY COUNT(customer_emails.trainer_id) DESC""").fetchall()
 top_ten_common_customers = cursor.execute("""
     SELECT customer_id, company, COUNT(customer_id) 
@@ -180,7 +180,13 @@ print(f""" - Stats:
  - Implementation Specialists: Total Emails Assigned
     ===============================================""")
 for trainer in individual_totals:
-    print(f"    - {trainer[0]} {trainer[1]}: {trainer[2]}")
+    if (trainer[3]):
+        print(f"    - {trainer[0]} {trainer[1]}: {trainer[2]}")
+print(f"    ===============================================")
+print(f"    - Former Implementaion Specialists")
+for trainer in individual_totals:
+    if (not trainer[3]):
+        print(f"       - {trainer[0]} {trainer[1]}: {trainer[2]}")
 print(f"    ===============================================")
 print(" - Most Frequent Customers")
 print(f"    =====================")
